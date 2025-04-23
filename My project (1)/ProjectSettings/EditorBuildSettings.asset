@@ -1,0 +1,14 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: d2c222803397ddb4eadf1dc21756c5e3
+  - enabled: 1
+    path: Assets/Pixel Adventure 1/Scenes/Level2.unity
+    guid: bb9f6d2a7e6553e4d8ca56d210676965
+  m_configObjects: {}
