@@ -1,77 +1,88 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(CharacterController))]
+
 public class SimpleCharacterController : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public float sprintSpeed = 8f;
-    public float jumpForce = 3f;
-    public float gravity = -15f;
+    public float jumpForce = 8f;
+    public float gravity = -9.81f;
 
     private CharacterController controller;
     private Vector3 velocity;
     private Transform thisTransform;
+    private AudioSource sound;
 
-    public UnityEvent triggerEvent;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
         thisTransform = transform;
+        sound = GetComponent<AudioSource>();
+
     }
 
     private void Update()
     {
-        Stamina();              // Check for sprinting
-        MoveCharacter();        // Handle movement + jumping
-        ApplyGravity();         // Simulate gravity
-        KeepCharacterOnXAxis(); // Stay on 2D plane (optional)
+        MoveCharacter();
+        ApplyGravity();
+        KeepCharacterOnXAxis();
+        QuitGame();
     }
 
     private void MoveCharacter()
     {
-        float moveInput = Input.GetAxis("Horizontal");
-        Vector3 move = new Vector3(moveInput, 0f, 0f) * (moveSpeed * Time.deltaTime);
+        // Horizontal movement
+        var moveInput = Input.GetAxis("Horizontal");
+        var move = new Vector3(moveInput, 0f, 0f) * (moveSpeed * Time.deltaTime);
         controller.Move(move);
 
+        // Jumping
         if (Input.GetButtonDown("Jump"))
         {
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+            sound.Play();
         }
     }
 
+    private void QuitGame()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
+    }
     private void ApplyGravity()
-    { 
+    {
+        // Apply gravity when not grounded
         if (!controller.isGrounded)
         {
             velocity.y += gravity * Time.deltaTime;
         }
-        else if (velocity.y < 0)
+        else
         {
-            velocity.y = -2f; // helps stick to ground
+            velocity.y = 0f; // Reset velocity when grounded
         }
 
+        // Apply the velocity to the controller
         controller.Move(velocity * Time.deltaTime);
     }
 
     private void KeepCharacterOnXAxis()
     {
-        Vector3 currentPosition = thisTransform.position;
+        // Maintain character on the same z-axis position
+        var currentPosition = thisTransform.position;
         currentPosition.z = 0f;
         thisTransform.position = currentPosition;
     }
 
-    private void Stamina()
+    private void OnTriggerEnter(Collider other)
     {
-        if (Input.GetKey(KeyCode.S))
+        if (other.gameObject.tag == "Collectable")
         {
-            moveSpeed = sprintSpeed;
-            triggerEvent.Invoke();
-        }
-        else
-        {
-            moveSpeed = 5f;
+            Destroy(other.gameObject);
         }
     }
 }
